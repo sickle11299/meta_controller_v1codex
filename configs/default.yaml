@@ -1,0 +1,26 @@
+{
+  "experiment_name": "default",
+  "seed": 7,
+  "control_interval_seconds": 5.0,
+  "results_root": "results",
+  "artifact_root": "artifacts/paper",
+  "env": {
+    "mode": "sim",
+    "episode_horizon": 12,
+    "risk_base": 0.2,
+    "risk_min": 0.05,
+    "risk_max": 0.5,
+    "weight_min": 0.1,
+    "weight_max": 4.0,
+    "weight_sum_target": 4.0
+  },
+  "reward": {
+    "psi": 1.0,
+    "xi": 0.5,
+    "phi": 0.1
+  },
+  "controller": {
+    "beta": 1.5,
+    "smoothing": 0.25
+  }
+}

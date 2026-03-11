@@ -1,0 +1,9 @@
+{
+  "extends": "configs/default.yaml",
+  "experiment_name": "ppo_train",
+  "mode": "train",
+  "train": {
+    "episodes": 4,
+    "checkpoint_every": 2
+  }
+}

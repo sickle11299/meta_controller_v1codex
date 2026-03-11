@@ -1,0 +1,8 @@
+{
+  "extends": "configs/default.yaml",
+  "experiment_name": "ppo_ablation",
+  "mode": "ablation",
+  "ablation": {
+    "variants": ["weights_only", "risk_only", "no_smoothing"]
+  }
+}

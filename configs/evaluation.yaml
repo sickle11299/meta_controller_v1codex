@@ -1,0 +1,9 @@
+{
+  "extends": "configs/default.yaml",
+  "experiment_name": "ppo_eval",
+  "mode": "evaluate",
+  "evaluate": {
+    "episodes": 3,
+    "baselines": ["static_utaa", "heuristic", "ppo_meta"]
+  }
+}
