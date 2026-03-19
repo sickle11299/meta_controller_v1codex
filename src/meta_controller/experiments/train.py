@@ -39,28 +39,37 @@ def run_training(config: Dict[str, Any], run_dir: Path) -> Dict[str, Any]:
     collector = MetricsCollector()
     runtime = SidecarRuntime(env=env, collector=collector, mapper=mapper)
     trainer = PPOTrainer()
-    episodes = int(config["train"]["episodes"])
+    # 4. 执行训练循环
+    episodes = int(config["train"]["episodes"])  # 训练局数（来自配置）
     for episode in range(episodes):
+        # 跑完一整局，返回一系列奖励
         runtime.run_episode(episode_index=episode, max_steps=int(config["env"]["episode_horizon"]))
-    for record in collector.records:
+
+    # 5. 将收集到的数据喂给 PPO 训练器
+    for record in collector.records:     # 遍历所有步骤记录
         trainer.record_step(record.reward, record.success_rate, record.hazard_integral)
-    summary = collector.summarize()
-    summary.update(trainer.train_epoch())
-    collector.write_jsonl(run_dir / "metrics.jsonl")
-    write_json(run_dir / "episode_summary.json", {"episodes": episodes, **summary})
-    save_checkpoint(run_dir / "checkpoints" / "last.json", summary)
-    return summary
+
+    # 6. 生成训练摘要并更新模型
+    summary = collector.summarize()          # 统计整体表现
+    summary.update(trainer.train_epoch())    # 执行一次 PPO 训练迭代
+
+    # 7. 保存结果到磁盘
+    collector.write_jsonl(run_dir / "metrics.jsonl")                        # 详细指标（每步一条）
+    write_json(run_dir / "episode_summary.json", {"episodes": episodes, **summary})  # 汇总信息
+    save_checkpoint(run_dir / "checkpoints" / "last.json", summary)         # 检查点（用于恢复训练）
+
+    return summary  # 返回训练摘要
 
 
-def main(argv: List[str] | None = None) -> int:
+def main(argv: List[str] | None = None) -> int:     #解析参数             
     parser = build_argument_parser()
-    args = parser.parse_args(argv)
+    args = parser.parse_args(argv)            #argv = Argument Vector（参数向量）这是从 C/C++ 继承来的传统命名：arg = argument（参数）v = vector（向量/数组）
     config = apply_overrides(load_config(args.config), args.set)
-    seed_bundle = set_global_seed(int(config["seed"]))
-    run_dir = resolve_run_dir(config, args.results_dir)
-    write_json(run_dir / "config_resolved.json", config)
-    write_json(run_dir / "manifest.json", {"seed_bundle": seed_bundle, **git_metadata()})
-    summary = run_training(config, run_dir)
+    seed_bundle = set_global_seed(int(config["seed"]))                  #固定随机性
+    run_dir = resolve_run_dir(config, args.results_dir)       #创建实验目录
+    write_json(run_dir / "config_resolved.json", config)      
+    write_json(run_dir / "manifest.json", {"seed_bundle": seed_bundle, **git_metadata()})  ## ← 写入 Git 信息   
+    summary = run_training(config, run_dir)           #执行
     write_json(run_dir / "summary.json", summary)
     print(json.dumps({"run_dir": str(run_dir), **summary}, indent=2))
     return 0

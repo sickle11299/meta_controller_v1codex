@@ -20,13 +20,14 @@ class SidecarRuntime:
 
     def run_episode(self, episode_index: int, max_steps: int) -> List[float]:
         observation = self.env.reset()
-        rewards: List[float] = []
+        rewards: List[float] = []       # 记录当前回合所有奖励
         for version in range(1, max_steps + 1):
-            snapshot = run_control_step(self.inference, self.store, observation, version)
-            transition = self.env.step(snapshot)
-            self.collector.log_step(episode_index=episode_index, step=version, transition=transition, snapshot=snapshot)
-            rewards.append(transition.reward)
-            observation = transition.observation
-            if transition.done:
+            snapshot = run_control_step(self.inference, self.store, observation, version)    # 执行推理，生成动作快照
+            transition = self.env.step(snapshot)   # 环境步进，获取转移信息
+            #在每个控制步骤后调用 MetricsCollector 的 log_step 方法，记录当前步的数据，包括回合编号、步数、环境交互的转移数据以及动作快照。这些数据将被存储在 MetricsCollector 中，以便后续分析和评估。
+            self.collector.log_step(episode_index=episode_index, step=version, transition=transition, snapshot=snapshot)  # 记录当前步数据   
+            rewards.append(transition.reward)    # 累计奖励
+            observation = transition.observation   # 更新下一时刻观测
+            if transition.done:    # 回合结束则退出
                 break
-        return rewards
+        return rewards    # 返回本回合所有奖励

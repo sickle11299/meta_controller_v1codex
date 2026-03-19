@@ -10,6 +10,7 @@ from meta_controller.utils.config import load_config
 class SidecarTests(unittest.TestCase):
     def test_sidecar_runs_without_blocking_scheduler_path(self) -> None:
         config = load_config('configs/default.yaml')
+        # 2. 创建安全动作映射器
         mapper = SafeActionMapper(
             beta=float(config['controller']['beta']),
             risk_base=float(config['env']['risk_base']),
@@ -22,8 +23,10 @@ class SidecarTests(unittest.TestCase):
         )
         runtime = SidecarRuntime(env=EdgeEnv(config), collector=MetricsCollector(), mapper=mapper)
         rewards = runtime.run_episode(episode_index=0, max_steps=3)
-        self.assertGreater(len(rewards), 0)
-        self.assertEqual(len(runtime.collector.records), len(rewards))
+        # 5. 验证两个核心契约
+        self.assertGreater(len(rewards), 0)  # 必须有奖励值返回
+        self.assertEqual(len(runtime.collector.records), len(rewards))  # 记录数与奖励数一致
+
 
 
 if __name__ == '__main__':

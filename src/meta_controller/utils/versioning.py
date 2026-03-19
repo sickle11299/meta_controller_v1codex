@@ -4,7 +4,7 @@ import subprocess
 from typing import Dict
 
 
-def git_metadata() -> Dict[str, str]:
+def git_metadata() -> Dict[str, str]:   #收集当前代码的 Git 版本信息，确保每个实验都能追溯到具体的代码版本
     def _run(*args: str) -> str:
         try:
             return subprocess.check_output(args, text=True, stderr=subprocess.DEVNULL).strip()

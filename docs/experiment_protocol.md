@@ -13,7 +13,7 @@
 - step-level metrics log
 - episode summary
 - run summary
-- checkpoints for training runs
+- checkpoints for training runs  # 运行要求：元数据(解析配置/种子包/Git信息/环境模式/标识)；输出(步骤指标/片段/运行汇总/训练检查点)
 
 ## Baselines
 

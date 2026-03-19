@@ -8,7 +8,7 @@ from typing import Dict, List
 class StepRecord:
     episode_index: int
     step: int
-    reward: float
+    reward: float       #奖励字段定义  StepRecord中存储实时奖励的
     success_rate: float
     hazard_integral: float
     action_delta_penalty: float

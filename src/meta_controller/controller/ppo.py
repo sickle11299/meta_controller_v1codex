@@ -22,7 +22,7 @@ class PPOTrainer:
             return {"mean_reward": 0.0, "mean_success_rate": 0.0, "mean_hazard": 0.0}
         count = float(len(self.trajectories))
         return {
-            "mean_reward": sum(item["reward"] for item in self.trajectories) / count,
+            "mean_reward": sum(item["reward"] for item in self.trajectories) / count,   # PPO内计算的也是平均奖励并非GAE 回报
             "mean_success_rate": sum(item["success_rate"] for item in self.trajectories) / count,
             "mean_hazard": sum(item["hazard"] for item in self.trajectories) / count,
         }
