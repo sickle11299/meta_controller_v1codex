@@ -6,21 +6,57 @@
   "artifact_root": "artifacts/paper",
   "env": {
     "mode": "sim",
-    "episode_horizon": 12,
+    "episode_horizon": 128,
     "risk_base": 0.2,
     "risk_min": 0.05,
     "risk_max": 0.5,
     "weight_min": 0.1,
     "weight_max": 4.0,
-    "weight_sum_target": 4.0
+    "weight_sum_target": 4.0,
+    "load_noise_scale": 0.03,
+    "rssi_noise_scale": 0.03,
+    "latency_noise_scale": 0.02,
+    "battery_capacity_ws": 25000.0,
+    "observation": {
+      "temp_idle_c": 34.43080813439079,
+      "temp_max_c": 60.0,
+      "power_idle_w": 7.0,
+      "power_p95_w": 16.0
+    },
+    "calibration": {
+      "csv_path": "c:/Users/22080/Desktop/metrics_FULL_20260128_102212.csv",
+      "report_path": "auto",
+      "fallback_dt_s": 5.0,
+      "power_r2_threshold": 0.6,
+      "power_rmse_threshold": 2.0,
+      "temp_mae_threshold": 4.0
+    }
   },
   "reward": {
-    "psi": 1.0,
-    "xi": 0.5,
-    "phi": 0.1
+    "weights": {
+      "success": 1.0,
+      "balance": 0.25,
+      "temp": 0.35,
+      "power": 0.30,
+      "latency": 0.10,
+      "action_delta": 0.05
+    }
   },
   "controller": {
     "beta": 1.5,
     "smoothing": 0.25
+  },
+  "ppo": {
+    "gamma": 0.99,
+    "gae_lambda": 0.95,
+    "clip_eps": 0.2,
+    "target_kl": 0.02,
+    "entropy_coef": 0.01,
+    "value_coef": 0.5,
+    "max_grad_norm": 0.5,
+    "update_epochs": 4,
+    "mini_batch_size": 64,
+    "policy_lr": 0.0003,
+    "value_lr": 0.001
   }
 }

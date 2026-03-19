@@ -24,4 +24,10 @@ def set_global_seed(seed: int) -> Dict[str, int]:
         np.random.seed(bundle.numpy)
     except Exception:
         pass
+    try:
+        import torch
+
+        torch.manual_seed(bundle.python)
+    except Exception:
+        pass
     return {"python": bundle.python, "numpy": bundle.numpy}

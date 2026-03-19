@@ -11,6 +11,8 @@ htmlcov/
 .venv/
 venv/
 env/
+!src/meta_controller/env/
+!src/meta_controller/env/**
 dist/
 build/
 *.egg-info/

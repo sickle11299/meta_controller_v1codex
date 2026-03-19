@@ -8,13 +8,21 @@ from typing import Dict, List
 class StepRecord:
     episode_index: int
     step: int
-    reward: float       #奖励字段定义  StepRecord中存储实时奖励的
+    reward: float
     success_rate: float
+    load_balance: float
     hazard_integral: float
     action_delta_penalty: float
+    latency_penalty: float
     scheduler_latency_ms: float
+    cpu_temp_c: float
+    power_total_w: float
+    power_pred_error_w: float
+    temp_pred_error_c: float
     risk_budget: float
+    model_validation_passed: bool
     weights: List[float]
+    reward_components: Dict[str, float]
 
     def to_dict(self) -> Dict[str, object]:
         return asdict(self)

@@ -21,12 +21,32 @@ class SchedulerSummary:
 
 
 class UTAAClient:
+    """调度器代理。
+
+    当前主线状态空间切到 7 维后，这里也同步只依赖：
+    `soc / load / temp / rssi / rtt / temp-load 梯度 / rssi 梯度`
+    这些与调度稳定性直接相关的量。
+    """
+
     def schedule(self, observation: list[float], parameters: ParameterSnapshot) -> SchedulerSummary:
-        soc, load, cpu_temp, rssi, rtt, _, _ = observation                       # 1. 解析观测值：只取前5个核心指标（剩余2个未使用）
-        quality = max(0.0, min(1.0, (soc + (1.0 - load) + rssi + (1.0 - rtt)) / 4.0))   # 2. 计算任务执行质量分（归一化到0-1之间）  # 逻辑：电量+低负载+强信号+低时延 四项平均，
-        risk_penalty = max(0.0, parameters.risk_budget - 0.1)             # 3. 计算风险惩罚系数：风险预算超过0.1时才产生惩罚（避免无意义的小值）
-        success_ratio = max(0.0, min(1.0, quality - risk_penalty * 0.15 - max(0.0, cpu_temp - 0.7)))   # 4. 计算任务成功概率 质量分 - 风险惩罚 - CPU高温惩罚（温度超过0.7才惩罚）
-        scheduled = max(1, int(round(4 + parameters.weights[0])))             # 5. 计算计划调度的任务数：基础4个，结合权重调整，最少1个
-        succeeded = int(round(scheduled * success_ratio))                    # 6. 计算实际成功完成的任务数：计划数 × 成功概率（取整）
-        latency_ms = 2.0 + parameters.weights[1] * 0.2                     # 7. 计算调度延迟（毫秒）：基础2ms，结合权重调整
-        return SchedulerSummary(scheduled=scheduled, succeeded=succeeded, latency_ms=latency_ms)    # 8. 返回调度结果汇总
+        soc, load, temp_norm, rssi, latency_norm, temp_load_gradient, rssi_gradient = observation
+
+        quality = 0.35 * soc + 0.25 * (1.0 - load) + 0.20 * rssi + 0.20 * (1.0 - latency_norm)
+        thermal_penalty = max(0.0, temp_norm - 0.75)
+        thermal_trend_penalty = max(0.0, temp_load_gradient)
+        link_trend_penalty = max(0.0, -rssi_gradient)
+        risk_penalty = max(0.0, parameters.risk_budget - 0.10)
+
+        success_ratio = quality
+        success_ratio -= 0.20 * risk_penalty
+        success_ratio -= 0.25 * thermal_penalty
+        success_ratio -= 0.10 * thermal_trend_penalty
+        success_ratio -= 0.05 * link_trend_penalty
+        success_ratio = min(1.0, max(0.0, success_ratio))
+
+        scheduled = max(1, int(round(4 + parameters.weights[0])))
+        succeeded = int(round(scheduled * success_ratio))
+
+        latency_ms = 6.0 + 18.0 * latency_norm + 3.0 * max(0.0, load - rssi) + 2.0 * parameters.risk_budget
+        latency_ms += 2.0 * max(0.0, -rssi_gradient)
+        return SchedulerSummary(scheduled=scheduled, succeeded=succeeded, latency_ms=latency_ms)
